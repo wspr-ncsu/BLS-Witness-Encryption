@@ -183,7 +183,7 @@ namespace witenc {
     void Helpers::RemoveTrailingZeroes(bytes &bytes) {
         int index = -1;
 
-        for (size_t i = bytes.size() - 1; i >= 0; i--) {
+        for (int i = bytes.size() - 1; i >= 0; i--) {
             if (bytes[i] == 0x00) {
                 index = i;
             } else {

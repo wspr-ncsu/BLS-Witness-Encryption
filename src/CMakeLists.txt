@@ -6,7 +6,6 @@ list(APPEND witenc_sources
   witenc.cpp
 )
 
-
 add_compile_options(-fno-builtin)
 add_compile_options(-fPIC)
 add_compile_options(-Wall)
@@ -26,6 +25,11 @@ target_include_directories(witenc PUBLIC
 target_link_libraries(witenc PUBLIC bls)
 
 if(BUILD_WITENC_BENCHMARKS)
-  add_executable(bench bench.cpp)
-  target_link_libraries(bench PRIVATE witenc)
+  add_executable(webench bench.cpp)
+  target_link_libraries(webench PRIVATE witenc)
+endif()
+
+if(BUILD_WITENC_TESTS)
+  add_executable(wetest test.cpp)
+  target_link_libraries(wetest PRIVATE witenc)
 endif()

@@ -14,7 +14,7 @@ typedef vector<uint8_t> bytes;
 
 namespace witenc {
     class CipherText;
-    class WitEnc;
+    class Scheme;
     class Helpers;
     class OTP;
 
@@ -41,26 +41,27 @@ namespace witenc {
             static bytes Decrypt(const bytes& key, const bytes& msg);
     };
 
-    class WitEnc {
+    class Scheme {
         public:
-            static bytes EncodeMessage(const bytes& msg, const bytes& hash);
-            static bytes DecodeMessage(const bytes& c3, const bytes& hash);
-            
-            static blst_scalar RandomScalar();
-            static GT RandomGT();
+            static PrivateKey KeyGen(bytes& seed);
 
             static CipherText Encrypt(const G1& pk, const bytes& tag, const bytes& msg);
-            static blst_scalar BuildC1(CipherText& ct);
             static GT BuildC2(CipherText& ct, const G1& pk, const blst_scalar r1, const bytes& tag);
             static void BuildC3(CipherText& ct, const GT& r2, const bytes& msg);
+            static bytes MaskMessage(const bytes& msg, const bytes& hash);
+            static blst_scalar BuildC1(CipherText& ct);
 
             static bytes Decrypt(const G2& sig, const CipherText& ctxt);
-            static bytes HashGT(const GT& gt);
+            static bytes UnmaskMessage(const bytes& c3, const bytes& hash);
             static GT RetrieveGT(const CipherText& ct, const G2& sig);
+            static bytes HashGT(const GT& gt);
+            
     };
 
     class Helpers {
         public:
+            static GT RandomGT();
+            static blst_scalar RandomScalar();
             static void RemoveTrailingZeroes(bytes &bytes);
     };
 } 

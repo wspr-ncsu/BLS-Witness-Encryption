@@ -12,51 +12,53 @@ std::default_random_engine generator(device());
 std::uniform_int_distribution<uint8_t> byte_distribution(0, 255);
 
 namespace witenc {
-    CipherText WitEnc::Encrypt(const G1& pk, const bytes& tag, const bytes& msg) {
+    CipherText Scheme::Encrypt(const G1& pk, const bytes& tag, const bytes& msg) {
         CipherText ct;
         blst_scalar r1 = BuildC1(ct);
-        GTElement r2 = BuildC2(ct, pk, r1, tag);
+        GT r2 = BuildC2(ct, pk, r1, tag);
         BuildC3(ct, r2, msg);
 
         return ct;
     }
 
-    bytes WitEnc::Decrypt(const G2Element& sig, const CipherText& ctxt) {
-        GTElement r2 = RetrieveGT(ctxt, sig);
+    bytes Scheme::Decrypt(const G2& sig, const CipherText& ctxt) {
+        GT r2 = RetrieveGT(ctxt, sig);
         bytes hash = HashGT(r2);
-        bytes msg = DecodeMessage(ctxt.c3, hash);
+        bytes msg = UnmaskMessage(ctxt.c3, hash);
 
         return msg;
     }
 
-    blst_scalar WitEnc::BuildC1(CipherText& ct) {
-        blst_scalar r1 = RandomScalar();
+    blst_scalar Scheme::BuildC1(CipherText& ct) {
+        blst_scalar r1 = Helpers::RandomScalar();
         ct.c1 = r1 * G1::Generator();
         ct.c1.CheckValid();
 
         return r1;
     }
 
-    GTElement WitEnc::BuildC2(CipherText& ct, const G1& pk, const blst_scalar r1, const bytes& tag) {
-        GTElement r2 = RandomGT();
-        G2Element g2_map = G2Element::FromMessage(
+    GT Scheme::BuildC2(CipherText& ct, const G1& pk, const blst_scalar r1, const bytes& tag) {
+        GT r2 = Helpers::RandomGT();
+
+        G2 g2_map = G2::FromMessage(
             tag, 
             (const uint8_t*)BasicSchemeMPL::CIPHERSUITE_ID.c_str(), 
             BasicSchemeMPL::CIPHERSUITE_ID.length()
         );
-        GTElement pair = pk.Pair(r1 * g2_map);
-        GTElement c2 = pair * r2;
+
+        GT pair = pk.Pair(r1 * g2_map);
+        GT c2 = pair * r2;
         ct.c2 = c2.Serialize();
 
         return r2;
     }
 
-    void WitEnc::BuildC3(CipherText& ct, const GTElement& r2, const bytes& msg) {
+    void Scheme::BuildC3(CipherText& ct, const GT& r2, const bytes& msg) {
         bytes hash = HashGT(r2);
-        ct.c3 = WitEnc::EncodeMessage(msg, hash);
+        ct.c3 = Scheme::MaskMessage(msg, hash);
     }
 
-    bytes WitEnc::HashGT(const GTElement& gt) {
+    bytes Scheme::HashGT(const GT& gt) {
         bytes serialized_gt = gt.Serialize();
         bytes hash(32);
         Util::Hash256(hash.data(), serialized_gt.data(), serialized_gt.size());
@@ -64,43 +66,22 @@ namespace witenc {
         return hash;
     }
 
-    GTElement WitEnc::RetrieveGT(const CipherText& ct, const G2Element& sig) {
-        GTElement c2 = GTElement::FromByteVector(ct.c2);
-        GTElement pair = ct.c1.Pair(sig);
+    GT Scheme::RetrieveGT(const CipherText& ct, const G2& sig) {
+        GT c2 = GT::FromByteVector(ct.c2);
+        GT pair = ct.c1.Pair(sig);
         return c2 / pair;
     }
 
-    blst_scalar WitEnc::RandomScalar() {
-        bytes random_bytes(32);
-
-        for (int i = 0; i < 32; i++) {
-            random_bytes[i] = byte_distribution(generator);
-        }
-
-        blst_scalar* scalar = Util::SecAlloc<blst_scalar>(1);
-        blst_scalar_from_bendian(scalar, random_bytes.data());
-        blst_scalar s = *scalar;
-        Util::SecFree(scalar);
-
-        return s;
-    }
-
-    GTElement WitEnc::RandomGT() {
-        blst_scalar s1 = RandomScalar();
-        G1 g1 = s1 * G1::Generator();
-        
-        blst_scalar s2 = RandomScalar();
-        G2Element g2 = s2 * G2Element::Generator();
-
-        return g1.Pair(g2);
-    }
-
-    bytes WitEnc::EncodeMessage(const bytes& msg, const bytes& hash) {
+    bytes Scheme::MaskMessage(const bytes& msg, const bytes& hash) {
         return OTP::Encrypt(hash, msg);
     }
 
-    bytes WitEnc::DecodeMessage(const bytes& c3, const bytes& hash) {
+    bytes Scheme::UnmaskMessage(const bytes& c3, const bytes& hash) {
         return OTP::Decrypt(hash, c3);
+    }
+
+    PrivateKey Scheme::KeyGen(bytes& seed) {
+        return BasicSchemeMPL().KeyGen(seed);
     }
 
     CipherText::CipherText() {}
@@ -120,7 +101,7 @@ namespace witenc {
             throw std::invalid_argument("Bad Ciphertext: Invalid c1");
         }
 
-        if (this->c2.empty() || this->c2.size() != GTElement::SIZE) {
+        if (this->c2.empty() || this->c2.size() != GT::SIZE) {
             throw std::invalid_argument("Bad Ciphertext: Invalid c2");
         }
 
@@ -142,7 +123,7 @@ namespace witenc {
     CipherText CipherText::Deserialize(bytes& bytes) {
         CipherText ct;
         size_t c1_size = G1::SIZE;
-        size_t c2_size = GTElement::SIZE;
+        size_t c2_size = GT::SIZE;
         size_t c3_size = bytes.size() - c1_size - c2_size;
 
         if (bytes.size() < (c1_size + c2_size + c3_size)) {
@@ -217,5 +198,30 @@ namespace witenc {
         if (index > -1) {
             bytes.erase(bytes.begin() + index, bytes.end());
         }
+    }
+
+    blst_scalar Helpers::RandomScalar() {
+        bytes random_bytes(32);
+
+        for (int i = 0; i < 32; i++) {
+            random_bytes[i] = byte_distribution(generator);
+        }
+
+        blst_scalar* scalar = Util::SecAlloc<blst_scalar>(1);
+        blst_scalar_from_bendian(scalar, random_bytes.data());
+        blst_scalar s = *scalar;
+        Util::SecFree(scalar);
+
+        return s;
+    }
+
+    GT Helpers::RandomGT() {
+        blst_scalar s1 = RandomScalar();
+        G1 g1 = s1 * G1::Generator();
+        
+        blst_scalar s2 = RandomScalar();
+        G2 g2 = s2 * G2::Generator();
+
+        return g1.Pair(g2);
     }
 }

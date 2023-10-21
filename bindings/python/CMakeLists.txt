@@ -6,7 +6,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(pybind11)
 
-pybind11_add_module(witencpy ${CMAKE_CURRENT_SOURCE_DIR}/bindings.cpp)
+pybind11_add_module(witencpy ${CMAKE_CURRENT_SOURCE_DIR}/witencpy.cpp)
 target_link_libraries(witencpy PRIVATE witenc)
 
 if((NOT MSVC) AND (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))

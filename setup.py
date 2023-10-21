@@ -63,6 +63,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name="witencpy",
+    version="1.0.0",
     author="David L. Adei",
     author_email="lokingdav@gmail.com",
     description="Witness Encryption based on BLS signatures in C++ (Python Bindings)",

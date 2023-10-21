@@ -80,10 +80,6 @@ namespace witenc {
         return OTP::Decrypt(hash, c3);
     }
 
-    PrivateKey Scheme::KeyGen(bytes& seed) {
-        return BasicSchemeMPL().KeyGen(seed);
-    }
-
     CipherText::CipherText() {}
 
     string CipherText::ToHexStr() const {

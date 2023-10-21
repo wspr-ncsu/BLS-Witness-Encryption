@@ -43,8 +43,6 @@ namespace witenc {
 
     class Scheme {
         public:
-            static PrivateKey KeyGen(bytes& seed);
-
             static CipherText Encrypt(const G1& pk, const bytes& tag, const bytes& msg);
             static GT BuildC2(CipherText& ct, const G1& pk, const blst_scalar r1, const bytes& tag);
             static void BuildC3(CipherText& ct, const GT& r2, const bytes& msg);

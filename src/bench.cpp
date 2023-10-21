@@ -79,8 +79,29 @@ void bench_encryption_decryptions()
     endStopwatch("Decryption", start, numIters);
 }
 
+void bench_otp()
+{
+    vector<uint8_t> key = getRandomSeed();
+    vector<uint8_t> msg = getRandomSeed();
+
+    auto start = startStopwatch();
+    for (int i = 0; i < numIters; i++) {
+        OTP::Encrypt(key, msg);
+    }
+    endStopwatch("OTP::Encrypt()", start, numIters);
+
+    vector<uint8_t> encrypted = OTP::Encrypt(key, msg);
+
+    start = startStopwatch();
+    for (int i = 0; i < numIters; i++) {
+        OTP::Decrypt(key, encrypted);
+    }
+    endStopwatch("OTP::Decrypt()", start, numIters);
+}
+
 int main(int argc, char* argv[])
 {
     bench_encryption_decryptions();
     bench_ciphertexts_serialize_and_deserialize();
+    bench_otp();
 }

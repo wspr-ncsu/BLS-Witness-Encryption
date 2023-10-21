@@ -17,9 +17,11 @@ project(witenc VERSION 0.1.0 LANGUAGES C CXX)
 
 set(BUILD_WITENC_TESTS "1" CACHE STRING "")
 set(BUILD_WITENC_BENCHMARKS "1" CACHE STRING "")
+set(BUILD_WITENC_PYTHON_BINDINGS "1" CACHE STRING "")
 
 message(STATUS "Build tests: ${BUILD_WITENC_TESTS}")
 message(STATUS "Build benchmarks: ${BUILD_WITENC_BENCHMARKS}")
+message(STATUS "Build python bindings: ${BUILD_WITENC_PYTHON_BINDINGS}")
 
 include(FetchContent)
 
@@ -27,6 +29,7 @@ set(BLS_GIT_TAG "origin/main")
 set(BLS_REPOSITORY "https://github.com/kofi-dalvik/bls-signatures.git")
 
 message(STATUS "bls will be built from: ${BLS_GIT_TAG} and repository ${BLS_REPOSITORY}")
+
 
 FetchContent_Declare(
   bls
@@ -36,3 +39,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(bls)
 
 add_subdirectory(src)
+
+if(BUILD_BLS_PYTHON_BINDINGS)
+  add_subdirectory(bindings/python)
+endif()

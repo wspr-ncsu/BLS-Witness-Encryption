@@ -152,7 +152,9 @@ namespace witenc {
         for (int j = 0; j < num_blocks; j++) {
             //create new key and append a byte counter
             bytes new_key(key);
-            new_key.push_back(j);
+            bytes four_bytes(4);
+            Util::IntToFourBytes(four_bytes.data(), j);
+            new_key.insert(new_key.end(), four_bytes.begin(), four_bytes.end());
             // Hash the new key
             Util::Hash256(hash.data(), new_key.data(), new_key.size());
 

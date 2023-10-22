@@ -179,7 +179,9 @@ void test_primitive_steps()
 void test_xor_class()
 {
     vector<uint8_t> key = getRandomSeed();
+    vector<uint8_t> r = getRandomSeed();
     vector<uint8_t> msg = getRandomSeed();
+    msg.insert(msg.end(), r.begin(), r.end());
 
     vector<uint8_t> ct = OTP::Encrypt(key, msg);
     vector<uint8_t> msg2 = OTP::Decrypt(key, ct);

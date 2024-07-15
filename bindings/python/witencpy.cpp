@@ -67,19 +67,26 @@ PYBIND11_MODULE(witencpy, m)
         });
 
     py::class_<Scheme>(m, "Scheme")
-        .def_static("encrypt", [](const G1Element& pk, const py::bytes& tag0, const py::bytes& msg0) {
+        .def_static("encrypt", [](const py::bytes& pk_bytes, const py::bytes& tag0, const py::bytes& msg0) {
             py::gil_scoped_release release;
 
+            std::string pk_str(pk_bytes);
             std::string msg_str(msg0);
             std::string tag_str(tag0);
+
             vector<uint8_t> msg(msg_str.begin(), msg_str.end());
             vector<uint8_t> tag(tag_str.begin(), tag_str.end());
+            G1Element pk = G1Element::FromByteVector(vector<uint8_t>(pk_str.begin(), pk_str.end()));
+
             return Scheme::Encrypt(pk, tag, msg);
         })
         
-        .def_static("decrypt", [](const G2Element& sig, const CipherText& ct) {
+        .def_static("decrypt", [](const py::bytes& sig_bytes, const CipherText& ct) {
             py::gil_scoped_release release;
-
+            
+            std::string sig_str(sig_bytes);
+            G2Element sig = G2Element::FromByteVector(vector<uint8_t>(sig_str.begin(), sig_str.end()));
+            
             return Scheme::Decrypt(sig, ct);
         });
 

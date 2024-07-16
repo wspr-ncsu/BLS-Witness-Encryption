@@ -23,33 +23,29 @@ def startStopwatch():
 
 def endStopwatch(test_name, start, numIters):
     end_time = time.perf_counter()
-
     duration = end_time - start
-
     print("\n%s\nTotal: %d runs in %0.1f ms\nAvg: %f"
         % (test_name, numIters, duration * 1000, duration * 1000 / numIters))
 
 def check_correctness():
     msg = b"Hello World!"
-    ct: CipherText = Scheme.encrypt(pk, tag, msg)
-    dec: bytes = bytes(Scheme.decrypt(sig, ct))
+    ct: CipherText = Scheme.encrypt(bytes(pk), tag, msg)
+    dec: bytes = bytes(Scheme.decrypt(bytes(sig), ct))
     assert msg == dec
 
 def bench_encryptions():
     start = startStopwatch()
-    
     for i in range(numIters):
         msg = b"%d" % i
-        ct = Scheme.encrypt(pk, tag, msg)
+        ct = Scheme.encrypt(bytes(pk), tag, msg)
         cts.append(ct)
         
     endStopwatch("WitEnc::Encryption", start, numIters)
     
 def bench_decryptions():
     start = startStopwatch()
-    
     for ct in cts:
-       Scheme.decrypt(sig, ct)
+       Scheme.decrypt(bytes(sig), ct)
         
     endStopwatch("WitEnc::Decryption", start, numIters)
 
@@ -93,19 +89,19 @@ def bench_otp_encryptions():
     
 def bench_otp_decryptions():
     start = startStopwatch()
-    
     for ct in cts:
        OTP.decrypt(tag, ct)
         
     endStopwatch("OTP::Decryption", start, numIters)
 
-check_correctness()
-bench_encryptions()
-bench_decryptions()
-bench_cts()
+if __name__ == "__main__":
+    check_correctness()
+    bench_encryptions()
+    bench_decryptions()
+    bench_cts()
 
-clear_cts()
+    clear_cts()
 
-check_otp_correctness()
-bench_otp_encryptions()
-bench_otp_decryptions()
+    check_otp_correctness()
+    bench_otp_encryptions()
+    bench_otp_decryptions()

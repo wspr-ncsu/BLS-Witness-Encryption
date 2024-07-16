@@ -3,9 +3,11 @@
 Python bindings for the witenc library.
 
 **Requirements**
+
 Requires Python 3.8+
 
 **Installing Witencpy and Dependencies**
+
 You will need Public key and signature implementations from the ```blspy``` library. Run ```pip install blspy```. This library has not yet been pushed to PyPI, so you should install it using the command ```python setup.py install```. If you face deprecation errors due to the installation method, use Python 3.8 specifically. We will be updating this soon.
 
 **Basic Usage**

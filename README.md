@@ -1,4 +1,4 @@
-# Witness Encryption implementation based on BLS Signatures 
+# Implementation of Witness Encryption based on BLS Signatures 
 
 Implements Witness Encryption based on BLS signatures using BLS Signatures implementation from [Chia-Network/bls-signatures](https://github.com/Chia-Network/bls-signatures)
 for cryptographic primitives (pairings, EC, hashing).

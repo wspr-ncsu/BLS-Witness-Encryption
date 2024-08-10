@@ -106,7 +106,7 @@ cmake --build . -- -j 6
 ### Run tests
 
 ```bash
-./build/src/runtest
+./build/src/wetest
 ```
 
 ### Run benchmarks
